@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trophy Hunter Game</title>
+    <style>
+        body { margin: 0; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.155.0/three.min.js" integrity="sha512-auFmPm+de880vk/c+bgBmuOnQ7BM28z7zPWmepVgX8737t75OHZjElOnQqERwP8cE4DIyCJ+gb1kE0b/eLWcnA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script>
+        // Step 1: Setup Three.js Scene
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        camera.position.z = 5;
+
+        // Step 3: Place the Trophy Randomly
+        const trophyGeometry = new THREE.BoxGeometry(1, 1, 1);
+        const trophyMaterial = new THREE.MeshBasicMaterial({color: 0xFFFF00, visible: false}); // Initially hidden
+        const trophy = new THREE.Mesh(trophyGeometry, trophyMaterial);
+        trophy.position.set(Math.random() * 10 - 5, Math.random() * 10 - 5, 0); // Random position between -5 and 5 for x and y
+        scene.add(trophy);
+
+        // Step 2: Add User Interaction
+        window.addEventListener('click', (event) => {
+            // Get normalized device coordinates (-1 to +1) for the click/tap position
+            const x = (event.clientX / window.innerWidth) * 2 - 1;
+            const y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+            // Step 4: Calculate Distance
+            const distance = trophy.position.distanceTo(new THREE.Vector3(x * 5, y * 5, 0));  // Multiply by 5 to match the scene scale
+
+            // Step 5: Change Color Based on Distance
+            const color = new THREE.Color();
+            color.setHSL(0.6 - distance * 0.1, 1, 0.5); // Adjust the hue based on distance
+
+            // Create a small sphere at the click location with the color based on distance
+            const pointGeometry = new THREE.SphereGeometry(0.2);
+            const pointMaterial = new THREE.MeshBasicMaterial({color: color});
+            const point = new THREE.Mesh(pointGeometry, pointMaterial);
+            point.position.set(x * 5, y * 5, 0);
+            scene.add(point);
+
+            // Step 6: Reveal Trophy
+            if (distance < 1) {  // Adjust threshold as needed
+                trophyMaterial.visible = true;
+            }
+        });
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+        animate();
+    </script>
+</body>
+</html>
