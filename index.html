@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trophy Hunter Game - Circle Trophy</title>
+    <title>Trophy Hunter Game - Emoji Trophy</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.60.0/phaser.min.js" integrity="sha512-YQL0GVx/Too3vZjBl9plePRIYsRnd1s8N6QOvXPdZ+JMH2mtRTLQXGUDGjNW6zr1HUgcOIury67IvWe91oeEwQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
 <body>
@@ -35,8 +35,7 @@
 
                 // Increase the revealing radius for the trophy
                 if (distance < 40) {
-                    graphics.fillStyle(0xFFFF00, 1); // Yellow color for the trophy
-                    graphics.fillCircle(trophyPosition.x, trophyPosition.y, 25);
+                    this.add.text(trophyPosition.x - 24, trophyPosition.y - 24, '🏆', { fontFamily: 'Arial', fontSize: 48, fill: '#000000' });
                     return;
                 }
 
