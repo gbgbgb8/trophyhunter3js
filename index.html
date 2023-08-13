@@ -53,11 +53,15 @@
                 const intersection = intersects[0].point;
 
                 // Step 4: Calculate Distance
-                const distance = trophy.position.distanceTo(intersection);
+const distance = trophy.position.distanceTo(intersection);
 
-                // Step 5: Change Color Based on Distance
-                const color = new THREE.Color();
-                color.setHSL(0.6 - distance * 0.1, 1, 0.5); // Adjust the hue based on distance
+// Normalize the distance (assuming maximum distance can be the diagonal of the plane)
+const maxDistance = Math.sqrt(10 * 10 + 10 * 10);  // diagonal of the 10x10 plane
+const normalizedDistance = distance / maxDistance;
+
+// Step 5: Change Color Based on Distance
+const color = new THREE.Color();
+color.setHSL(0.6 - normalizedDistance * 0.6, 1, 0.5);  // range from blue (0.6) to red (0)
 
                 // Create a small sphere at the click location with the color based on distance
                 const pointGeometry = new THREE.SphereGeometry(0.2);
