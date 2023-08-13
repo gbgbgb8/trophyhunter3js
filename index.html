@@ -24,7 +24,10 @@
         const game = new Phaser.Game(config);
 
         function create() {
+            const container = this.add.container(0, 0);
+
             graphics = this.add.graphics();
+            container.add(graphics);
 
             // Randomly set the position of the trophy
             trophyPosition.x = Phaser.Math.Between(50, 750);
@@ -35,12 +38,8 @@
 
                 // Increase the revealing radius for the trophy
                 if (distance < 40) {
-                    // Clear the graphics in the area around the trophy
-                    graphics.fillStyle(0xFFFFFF, 1);
-                    graphics.fillRect(trophyPosition.x - 40, trophyPosition.y - 40, 80, 80);
-                    
-                    // Now display the trophy emoji
-                    this.add.text(trophyPosition.x - 24, trophyPosition.y - 24, '🏆', { fontFamily: 'Arial', fontSize: 48, fill: '#000000' });
+                    const trophyText = this.add.text(trophyPosition.x - 24, trophyPosition.y - 24, '🏆', { fontFamily: 'Arial', fontSize: 48, fill: '#000000' });
+                    container.add(trophyText); // Add the text to the container, ensuring it's on top
                     return;
                 }
 
