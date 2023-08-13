@@ -53,18 +53,30 @@
                     emoji.on('pointerdown', function () {
                         if (selectedEmoji) {
                             if (Math.abs(selectedEmoji.x - emoji.x) + Math.abs(selectedEmoji.y - emoji.y) === 60) {
-                                let temp = selectedEmoji.text;
-                                selectedEmoji.setText(emoji.text);
-                                emoji.setText(temp);
-
-                                // Check for matches after swapping
-                                checkForMatches();
+                                this.tweens.add({
+                                    targets: selectedEmoji,
+                                    x: emoji.x,
+                                    y: emoji.y,
+                                    duration: 200
+                                });
+                                this.tweens.add({
+                                    targets: emoji,
+                                    x: selectedEmoji.x,
+                                    y: selectedEmoji.y,
+                                    duration: 200,
+                                    onComplete: () => {
+                                        let temp = selectedEmoji.text;
+                                        selectedEmoji.setText(emoji.text);
+                                        emoji.setText(temp);
+                                        checkForMatches();
+                                    }
+                                });
                             }
                             selectedEmoji = null;
                         } else {
                             selectedEmoji = emoji;
                         }
-                    });
+                    }, this);
                     row.push(emoji);
                 }
                 board.push(row);
@@ -79,68 +91,54 @@
         function update() {}
 
         function checkForMatches() {
-    let matches = []; // To store emojis that need to be removed
+            let matches = [];
 
-    // Check for horizontal matches
-    for (let i = 0; i < 6; i++) {
-        let matchCount = 1;
-        for (let j = 1; j < 6; j++) {
-            if (board[i][j].text === board[i][j - 1].text) {
-                matchCount++;
-                if (matchCount >= 3 && j === 5) { // Check at the end of the row
-                    for (let k = 0; k < matchCount; k++) {
-                        matches.push(board[i][j - k]);
-                    }
-                }
-            } else {
-                if (matchCount >= 3) {
-                    for (let k = 0; k < matchCount; k++) {
-                        matches.push(board[i][j - k - 1]);
-                    }
-                }
-                matchCount = 1;
+            for (let i = 0; i < 6; i++) {
+                checkLineForMatch(board[i]);
             }
-        }
-    }
 
-    // Check for vertical matches
-    for (let j = 0; j < 6; j++) {
-        let matchCount = 1;
-        for (let i = 1; i < 6; i++) {
-            if (board[i][j].text === board[i - 1][j].text) {
-                matchCount++;
-                if (matchCount >= 3 && i === 5) { // Check at the bottom of the column
-                    for (let k = 0; k < matchCount; k++) {
-                        matches.push(board[i - k][j]);
-                    }
+            for (let j = 0; j < 6; j++) {
+                let column = [];
+                for (let i = 0; i < 6; i++) {
+                    column.push(board[i][j]);
                 }
-            } else {
-                if (matchCount >= 3) {
-                    for (let k = 0; k < matchCount; k++) {
-                        matches.push(board[i - k - 1][j]);
-                    }
-                }
-                matchCount = 1;
+                checkLineForMatch(column);
             }
+
+            function checkLineForMatch(line) {
+                let matchCount = 1;
+                for (let k = 1; k < 6; k++) {
+                    if (line[k].text === line[k - 1].text) {
+                        matchCount++;
+                        if (matchCount >= 3 && k === 5) {
+                            for (let l = 0; l < matchCount; l++) {
+                                matches.push(line[k - l]);
+                            }
+                        }
+                    } else {
+                        if (matchCount >= 3) {
+                            for (let l = 0; l < matchCount; l++) {
+                                matches.push(line[k - l - 1]);
+                            }
+                        }
+                        matchCount = 1;
+                    }
+                }
+            }
+
+            matches.forEach(emoji => {
+                let col = board[0].indexOf(emoji);
+                let row = board.indexOf(board.find(r => r.includes(emoji)));
+                
+                for (let i = row; i > 0; i--) {
+                    board[i][col].setText(board[i - 1][col].text);
+                }
+                board[0][col].setText(Phaser.Math.RND.pick(emojis));
+            });
+
+            score += matches.length * 10;
+            scoreText.setText('Score: ' + score);
         }
-    }
-
-    // Remove matched emojis and let the above emojis fall down
-    for (let emoji of matches) {
-        let col = board[0].indexOf(emoji);
-        let row = board.indexOf(board.find(r => r.includes(emoji)));
-        
-        for (let i = row; i > 0; i--) {
-            board[i][col].setText(board[i - 1][col].text);
-        }
-        board[0][col].setText(Phaser.Math.RND.pick(emojis));
-    }
-
-    // Update the score
-    score += matches.length * 10;
-    scoreText.setText('Score: ' + score);
-}
-
 
         new Phaser.Game(config);
     </script>
