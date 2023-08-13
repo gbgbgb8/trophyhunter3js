@@ -2,87 +2,53 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trophy Hunter Game</title>
-    <style>
-        body { margin: 0; }
-        canvas { display: block; }
-    </style>
+    <title>Trophy Hunter - Phaser</title>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.min.js"></script>
 </head>
 <body>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.155.0/three.min.js" integrity="sha512-auFmPm+de880vk/c+bgBmuOnQ7BM28z7zPWmepVgX8737t75OHZjElOnQqERwP8cE4DIyCJ+gb1kE0b/eLWcnA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script>
-        // Step 1: Setup Three.js Scene
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 
-        const renderer = new THREE.WebGLRenderer();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        document.body.appendChild(renderer.domElement);
-
-        camera.position.z = 5;
-
-        // Add a plane to serve as the ground
-        const planeGeometry = new THREE.PlaneGeometry(10, 10);
-        const planeMaterial = new THREE.MeshBasicMaterial({visible: false}); // Invisible ground
-        const plane = new THREE.Mesh(planeGeometry, planeMaterial);
-        scene.add(plane);
-
-        // Step 3: Place the Trophy Randomly
-        const trophyGeometry = new THREE.BoxGeometry(1, 1, 1);
-        const trophyMaterial = new THREE.MeshBasicMaterial({color: 0xFFFF00, visible: false}); // Initially hidden
-        const trophy = new THREE.Mesh(trophyGeometry, trophyMaterial);
-        trophy.position.set(Math.random() * 10 - 5, Math.random() * 10 - 5, 0.5); // Raise the trophy slightly above the ground
-        scene.add(trophy);
-
-        // Raycasting setup
-        const raycaster = new THREE.Raycaster();
-        const mouse = new THREE.Vector2();
-
-        // Step 2: Add User Interaction
-        window.addEventListener('click', (event) => {
-            // Update mouse coordinates
-            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-
-            raycaster.setFromCamera(mouse, camera);
-            const intersects = raycaster.intersectObject(plane); // Intersect with the plane
-
-            if (intersects.length > 0) {
-                const intersection = intersects[0].point;
-
-                // Step 4: Calculate Distance
-const distance = trophy.position.distanceTo(intersection);
-
-// Normalize the distance (assuming maximum distance can be the diagonal of the plane)
-const maxDistance = Math.sqrt(10 * 10 + 10 * 10);  // diagonal of the 10x10 plane
-const normalizedDistance = distance / maxDistance;
-
-// Step 5: Change Color Based on Distance
-const color = new THREE.Color();
-color.setHSL(0.6 - normalizedDistance * 0.6, 1, 0.5);  // range from blue (0.6) to red (0)
-
-                // Create a small sphere at the click location with the color based on distance
-                const pointGeometry = new THREE.SphereGeometry(0.2);
-                const pointMaterial = new THREE.MeshBasicMaterial({color: color});
-                const point = new THREE.Mesh(pointGeometry, pointMaterial);
-                point.position.copy(intersection);
-                scene.add(point);
-
-                // Step 6: Reveal Trophy
-                if (distance < 1) {  // Adjust threshold as needed
-                    trophyMaterial.visible = true;
-                }
-            }
-        });
-
-        // Animation loop
-        function animate() {
-            requestAnimationFrame(animate);
-            renderer.render(scene, camera);
+<script>
+    const config = {
+        type: Phaser.AUTO,
+        width: 800,
+        height: 600,
+        scene: {
+            preload: preload,
+            create: create,
+            update: update
         }
-        animate();
-    </script>
+    };
+
+    let trophy;
+    let graphics;
+
+    const game = new Phaser.Game(config);
+
+    function preload() {
+        // Load any assets (images, audio, etc) here if needed
+    }
+
+    function create() {
+        // Set a random position for the trophy
+        trophy = { x: Math.random() * 800, y: Math.random() * 600 };
+
+        // Graphics object for drawing (used for debugging to see where the trophy is)
+        graphics = this.add.graphics({ fillStyle: { color: 0xff0000 } });
+        graphics.fillCircle(trophy.x, trophy.y, 5); // Uncomment to see the trophy position
+
+        // Add click event
+        this.input.on('pointerdown', pointer => {
+            const distance = Phaser.Math.Distance.Between(trophy.x, trophy.y, pointer.x, pointer.y);
+            const color = Phaser.Display.Color.Interpolate.RGBWithRGB(0, 0, 255, 255, 0, 0, 500, distance);
+            this.cameras.main.setBackgroundColor(color);
+        });
+    }
+
+    function update() {
+        // Any game loop logic goes here
+    }
+</script>
+
 </body>
 </html>
