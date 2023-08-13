@@ -35,6 +35,11 @@
 
                 // Increase the revealing radius for the trophy
                 if (distance < 40) {
+                    // Clear the graphics in the area around the trophy
+                    graphics.fillStyle(0xFFFFFF, 1);
+                    graphics.fillRect(trophyPosition.x - 40, trophyPosition.y - 40, 80, 80);
+                    
+                    // Now display the trophy emoji
                     this.add.text(trophyPosition.x - 24, trophyPosition.y - 24, '🏆', { fontFamily: 'Arial', fontSize: 48, fill: '#000000' });
                     return;
                 }
