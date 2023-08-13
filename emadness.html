@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emoji Match Madness</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        canvas {
+            display: block;
+            margin: auto;
+            background: #202020;
+        }
+    </style>
+</head>
+
+<body>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.min.js"></script>
+    <script>
+        const config = {
+            type: Phaser.AUTO,
+            width: 360,
+            height: 640,
+            scene: {
+                preload: preload,
+                create: create,
+                update: update
+            },
+            backgroundColor: "#f4f4f4"
+        };
+
+        let board;
+        let emojis = ['🍎', '🍌', '🍒', '🍇', '🍉', '🍍'];
+        let selectedEmoji = null;
+        let score = 0;
+        let scoreText;
+
+        function preload() {}
+
+        function create() {
+            board = [];
+            for (let i = 0; i < 6; i++) {
+                let row = [];
+                for (let j = 0; j < 6; j++) {
+                    let emoji = this.add.text(60 * j + 30, 60 * i + 150, Phaser.Math.RND.pick(emojis), {
+                        fontSize: '32px'
+                    }).setOrigin(0.5);
+                    emoji.setInteractive();
+                    emoji.on('pointerdown', function () {
+                        if (selectedEmoji) {
+                            if (Math.abs(selectedEmoji.x - emoji.x) + Math.abs(selectedEmoji.y - emoji.y) === 60) {
+                                let temp = selectedEmoji.text;
+                                selectedEmoji.setText(emoji.text);
+                                emoji.setText(temp);
+
+                                // Check for matches after swapping
+                                checkForMatches();
+                            }
+                            selectedEmoji = null;
+                        } else {
+                            selectedEmoji = emoji;
+                        }
+                    });
+                    row.push(emoji);
+                }
+                board.push(row);
+            }
+
+            scoreText = this.add.text(10, 10, 'Score: 0', {
+                fontSize: '20px',
+                fill: '#000'
+            });
+        }
+
+        function update() {}
+
+        function checkForMatches() {
+    let matches = []; // To store emojis that need to be removed
+
+    // Check for horizontal matches
+    for (let i = 0; i < 6; i++) {
+        let matchCount = 1;
+        for (let j = 1; j < 6; j++) {
+            if (board[i][j].text === board[i][j - 1].text) {
+                matchCount++;
+                if (matchCount >= 3 && j === 5) { // Check at the end of the row
+                    for (let k = 0; k < matchCount; k++) {
+                        matches.push(board[i][j - k]);
+                    }
+                }
+            } else {
+                if (matchCount >= 3) {
+                    for (let k = 0; k < matchCount; k++) {
+                        matches.push(board[i][j - k - 1]);
+                    }
+                }
+                matchCount = 1;
+            }
+        }
+    }
+
+    // Check for vertical matches
+    for (let j = 0; j < 6; j++) {
+        let matchCount = 1;
+        for (let i = 1; i < 6; i++) {
+            if (board[i][j].text === board[i - 1][j].text) {
+                matchCount++;
+                if (matchCount >= 3 && i === 5) { // Check at the bottom of the column
+                    for (let k = 0; k < matchCount; k++) {
+                        matches.push(board[i - k][j]);
+                    }
+                }
+            } else {
+                if (matchCount >= 3) {
+                    for (let k = 0; k < matchCount; k++) {
+                        matches.push(board[i - k - 1][j]);
+                    }
+                }
+                matchCount = 1;
+            }
+        }
+    }
+
+    // Remove matched emojis and let the above emojis fall down
+    for (let emoji of matches) {
+        let col = board[0].indexOf(emoji);
+        let row = board.indexOf(board.find(r => r.includes(emoji)));
+        
+        for (let i = row; i > 0; i--) {
+            board[i][col].setText(board[i - 1][col].text);
+        }
+        board[0][col].setText(Phaser.Math.RND.pick(emojis));
+    }
+
+    // Update the score
+    score += matches.length * 10;
+    scoreText.setText('Score: ' + score);
+}
+
+
+        new Phaser.Game(config);
+    </script>
+</body>
+
+</html>
