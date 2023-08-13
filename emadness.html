@@ -53,6 +53,16 @@
                     emoji.on('pointerdown', function () {
                         if (selectedEmoji) {
                             if (Math.abs(selectedEmoji.x - emoji.x) + Math.abs(selectedEmoji.y - emoji.y) === 60) {
+                                // Update board positions
+                                let tempRow = board.indexOf(board.find(r => r.includes(selectedEmoji)));
+                                let tempCol = board[tempRow].indexOf(selectedEmoji);
+                                let newRow = board.indexOf(board.find(r => r.includes(emoji)));
+                                let newCol = board[newRow].indexOf(emoji);
+
+                                board[tempRow][tempCol] = emoji;
+                                board[newRow][newCol] = selectedEmoji;
+
+                                // Swap visuals
                                 this.tweens.add({
                                     targets: selectedEmoji,
                                     x: emoji.x,
@@ -65,9 +75,6 @@
                                     y: selectedEmoji.y,
                                     duration: 200,
                                     onComplete: () => {
-                                        let temp = selectedEmoji.text;
-                                        selectedEmoji.setText(emoji.text);
-                                        emoji.setText(temp);
                                         checkForMatches();
                                     }
                                 });
@@ -92,7 +99,6 @@
 
         function checkForMatches() {
             let matches = [];
-
             for (let i = 0; i < 6; i++) {
                 checkLineForMatch(board[i]);
             }
