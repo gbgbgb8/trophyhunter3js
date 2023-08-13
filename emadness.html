@@ -50,17 +50,21 @@
                         fontSize: '32px'
                     }).setOrigin(0.5);
                     emoji.setInteractive();
+                    emoji.row = i;
+                    emoji.col = j;
                     emoji.on('pointerdown', function () {
                         if (selectedEmoji) {
-                            if (Math.abs(selectedEmoji.x - emoji.x) + Math.abs(selectedEmoji.y - emoji.y) === 60) {
-                                // Update board positions
-                                let tempRow = board.indexOf(board.find(r => r.includes(selectedEmoji)));
-                                let tempCol = board[tempRow].indexOf(selectedEmoji);
-                                let newRow = board.indexOf(board.find(r => r.includes(emoji)));
-                                let newCol = board[newRow].indexOf(emoji);
+                            if (Math.abs(selectedEmoji.row - emoji.row) + Math.abs(selectedEmoji.col - emoji.col) === 1) {
+                                let tempRow = selectedEmoji.row;
+                                let tempCol = selectedEmoji.col;
 
+                                // Update board positions
                                 board[tempRow][tempCol] = emoji;
-                                board[newRow][newCol] = selectedEmoji;
+                                board[emoji.row][emoji.col] = selectedEmoji;
+
+                                // Swap emoji properties for future reference
+                                [emoji.row, selectedEmoji.row] = [selectedEmoji.row, emoji.row];
+                                [emoji.col, selectedEmoji.col] = [selectedEmoji.col, emoji.col];
 
                                 // Swap visuals
                                 this.tweens.add({
@@ -133,9 +137,9 @@
             }
 
             matches.forEach(emoji => {
-                let col = board[0].indexOf(emoji);
-                let row = board.indexOf(board.find(r => r.includes(emoji)));
-                
+                let col = emoji.col;
+                let row = emoji.row;
+
                 for (let i = row; i > 0; i--) {
                     board[i][col].setText(board[i - 1][col].text);
                 }
