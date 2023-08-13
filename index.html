@@ -23,11 +23,17 @@
 
         camera.position.z = 5;
 
+        // Add a plane to serve as the ground
+        const planeGeometry = new THREE.PlaneGeometry(10, 10);
+        const planeMaterial = new THREE.MeshBasicMaterial({visible: false}); // Invisible ground
+        const plane = new THREE.Mesh(planeGeometry, planeMaterial);
+        scene.add(plane);
+
         // Step 3: Place the Trophy Randomly
         const trophyGeometry = new THREE.BoxGeometry(1, 1, 1);
         const trophyMaterial = new THREE.MeshBasicMaterial({color: 0xFFFF00, visible: false}); // Initially hidden
         const trophy = new THREE.Mesh(trophyGeometry, trophyMaterial);
-        trophy.position.set(Math.random() * 10 - 5, Math.random() * 10 - 5, 0); // Random position between -5 and 5 for x and y
+        trophy.position.set(Math.random() * 10 - 5, Math.random() * 10 - 5, 0.5); // Raise the trophy slightly above the ground
         scene.add(trophy);
 
         // Raycasting setup
@@ -41,7 +47,7 @@
             mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
             raycaster.setFromCamera(mouse, camera);
-            const intersects = raycaster.intersectObjects([scene], true);
+            const intersects = raycaster.intersectObject(plane); // Intersect with the plane
 
             if (intersects.length > 0) {
                 const intersection = intersects[0].point;
