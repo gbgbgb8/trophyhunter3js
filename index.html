@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trophy Hunter Game - Step 2</title>
+    <title>Trophy Hunter Game - Step 1</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.60.0/phaser.min.js" integrity="sha512-YQL0GVx/Too3vZjBl9plePRIYsRnd1s8N6QOvXPdZ+JMH2mtRTLQXGUDGjNW6zr1HUgcOIury67IvWe91oeEwQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
 <body>
@@ -31,25 +31,9 @@
             trophyPosition.y = Phaser.Math.Between(50, 550);
 
             this.input.on('pointerdown', function (pointer) {
-                const distance = Phaser.Math.Distance.Between(pointer.x, pointer.y, trophyPosition.x, trophyPosition.y);
-
-                // If the distance is very small, player found the trophy
-                if (distance < 25) {
-                    this.add.text(trophyPosition.x, trophyPosition.y, '🏆').setFontSize(48);
-                    return;
-                }
-
-                let color = Phaser.Display.Color.Interpolate.ColorWithColor(
-                    Phaser.Display.Color.BLUE,
-                    Phaser.Display.Color.RED,
-                    800,  // Max distance (approximated based on canvas size)
-                    distance,
-                    0
-                );
-
-                graphics.fillStyle(color.color, 1);
+                graphics.fillStyle(0xFF0000, 1); // Red color
                 graphics.fillCircle(pointer.x, pointer.y, 20);
-            }, this);
+            });
         }
 
     </script>
