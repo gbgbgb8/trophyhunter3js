@@ -15,10 +15,24 @@
             margin: auto;
             background: #202020;
         }
+        #restartButton {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 10px 20px;
+            background-color: #f4f4f4;
+            border: none;
+            border-radius: 5px;
+            font-size: 20px;
+            cursor: pointer;
+        }
     </style>
 </head>
 
 <body>
+    <button id="restartButton" onclick="location.reload()">Restart</button>
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.min.js"></script>
     <script>
         const config = {
@@ -37,7 +51,10 @@
         let emojis = ['🍎', '🍌', '🍒', '🍇', '🍉', '🍍'];
         let selectedEmoji = null;
         let score = 0;
-        let scoreText;
+        let moves = 0;
+        let maxMoves = 30; // Game ends after this many moves
+        let scoreText, movesText, highScoreText;
+        let highScore = localStorage.getItem('highScore') || 0; // Save high score in local storage
 
         function preload() {}
 
@@ -80,6 +97,11 @@
                                     duration: 200,
                                     onComplete: () => {
                                         checkForMatches();
+                                        moves++;
+                                        movesText.setText('Moves: ' + moves);
+                                        if (moves === maxMoves) {
+                                            gameOver();
+                                        }
                                     }
                                 });
                             }
@@ -94,6 +116,14 @@
             }
 
             scoreText = this.add.text(10, 10, 'Score: 0', {
+                fontSize: '20px',
+                fill: '#000'
+            });
+            movesText = this.add.text(10, 35, 'Moves: 0', {
+                fontSize: '20px',
+                fill: '#000'
+            });
+            highScoreText = this.add.text(10, 60, 'High Score: ' + highScore, {
                 fontSize: '20px',
                 fill: '#000'
             });
@@ -137,17 +167,46 @@
             }
 
             matches.forEach(emoji => {
-                let col = emoji.col;
-                let row = emoji.row;
+                this.tweens.add({
+                    targets: emoji,
+                    scaleX: 1.2,
+                    scaleY: 1.2,
+                    alpha: 0,
+                    yoyo: true,
+                    onComplete: () => {
+                        let col = emoji.col;
+                        let row = emoji.row;
 
-                for (let i = row; i > 0; i--) {
-                    board[i][col].setText(board[i - 1][col].text);
-                }
-                board[0][col].setText(Phaser.Math.RND.pick(emojis));
+                        for (let i = row; i > 0; i--) {
+                            board[i][col].setText(board[i - 1][col].text);
+                            this.tweens.add({
+                                targets: board[i][col],
+                                y: board[i][col].y + 60,
+                                duration: 300
+                            });
+                        }
+                        board[0][col].setText(Phaser.Math.RND.pick(emojis));
+                        board[0][col].y -= 60;
+                        this.tweens.add({
+                            targets: board[0][col],
+                            y: 150,
+                            duration: 300
+                        });
+                    }
+                });
             });
 
             score += matches.length * 10;
             scoreText.setText('Score: ' + score);
+            if (score > highScore) {
+                highScore = score;
+                highScoreText.setText('High Score: ' + highScore);
+                localStorage.setItem('highScore', highScore);
+            }
+        }
+
+        function gameOver() {
+            document.getElementById('restartButton').style.display = 'block';
         }
 
         new Phaser.Game(config);
