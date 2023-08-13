@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trophy Hunter Game - Debug</title>
+    <title>Trophy Hunter Game</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.60.0/phaser.min.js" integrity="sha512-YQL0GVx/Too3vZjBl9plePRIYsRnd1s8N6QOvXPdZ+JMH2mtRTLQXGUDGjNW6zr1HUgcOIury67IvWe91oeEwQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
 <body>
@@ -17,19 +17,42 @@
             }
         };
 
+        let trophyPosition = {};
         let graphics;
 
         const game = new Phaser.Game(config);
 
         function create() {
             graphics = this.add.graphics();
-            graphics.fillStyle(0x00FF00, 1); // Green color for testing
-            graphics.fillCircle(400, 300, 50); // Draw a circle in the middle of the canvas
+
+            // Randomly set the position of the trophy
+            trophyPosition.x = Phaser.Math.Between(50, 750);
+            trophyPosition.y = Phaser.Math.Between(50, 550);
+
+            // Uncomment the next line to see where the trophy is (for debugging)
+            // this.add.text(trophyPosition.x, trophyPosition.y, '🏆');
 
             this.input.on('pointerdown', function (pointer) {
-                graphics.fillStyle(0xFF0000, 1); // Red color for testing
+                const distance = Phaser.Math.Distance.Between(pointer.x, pointer.y, trophyPosition.x, trophyPosition.y);
+
+                // If the distance is very small, player found the trophy
+                if (distance < 25) {
+                    this.add.text(trophyPosition.x, trophyPosition.y, '🏆').setFontSize(48);
+                    return;
+                }
+
+                const alpha = Phaser.Math.Clamp(1 - distance / 400, 0.2, 1);
+                let color = Phaser.Display.Color.Interpolate.ColorWithColor(
+                    Phaser.Display.Color.BLUE, 
+                    Phaser.Display.Color.RED, 
+                    800,  // Assuming the maximum distance can be the width of the canvas
+                    distance, 
+                    0
+                );
+
+                graphics.fillStyle(color.color, alpha);
                 graphics.fillCircle(pointer.x, pointer.y, 20);
-            });
+            }, this);
         }
 
     </script>
