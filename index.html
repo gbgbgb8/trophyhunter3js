@@ -3,52 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trophy Hunter - Phaser</title>
-    <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.min.js"></script>
+    <title>Trophy Hunter Game</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.60.0/phaser.min.js" integrity="sha512-YQL0GVx/Too3vZjBl9plePRIYsRnd1s8N6QOvXPdZ+JMH2mtRTLQXGUDGjNW6zr1HUgcOIury67IvWe91oeEwQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
 <body>
+    <script>
+        const config = {
+            type: Phaser.AUTO,
+            width: 800,
+            height: 600,
+            scene: {
+                preload: preload,
+                create: create,
+                update: update
+            }
+        };
 
-<script>
-    const config = {
-        type: Phaser.AUTO,
-        width: 800,
-        height: 600,
-        scene: {
-            preload: preload,
-            create: create,
-            update: update
+        let trophyPosition = {};
+        let trophy;
+        let graphics;
+
+        const game = new Phaser.Game(config);
+
+        function preload() {
+            // Preload assets if any
         }
-    };
 
-    let trophy;
-    let graphics;
+        function create() {
+            graphics = this.add.graphics();
 
-    const game = new Phaser.Game(config);
+            // Randomly set the position of the trophy
+            trophyPosition.x = Phaser.Math.Between(50, 750);
+            trophyPosition.y = Phaser.Math.Between(50, 550);
 
-    function preload() {
-        // Load any assets (images, audio, etc) here if needed
-    }
+            // Uncomment the next line to see where the trophy is (for debugging)
+            // this.add.text(trophyPosition.x, trophyPosition.y, '🏆');
 
-    function create() {
-        // Set a random position for the trophy
-        trophy = { x: Math.random() * 800, y: Math.random() * 600 };
+            this.input.on('pointerdown', function (pointer) {
+                const distance = Phaser.Math.Distance.Between(pointer.x, pointer.y, trophyPosition.x, trophyPosition.y);
 
-        // Graphics object for drawing (used for debugging to see where the trophy is)
-        graphics = this.add.graphics({ fillStyle: { color: 0xff0000 } });
-        graphics.fillCircle(trophy.x, trophy.y, 5); // Uncomment to see the trophy position
+                // If the distance is very small, player found the trophy
+                if (distance < 25) {
+                    this.add.text(trophyPosition.x, trophyPosition.y, '🏆').setFontSize(48);
+                    return;
+                }
 
-        // Add click event
-        this.input.on('pointerdown', pointer => {
-            const distance = Phaser.Math.Distance.Between(trophy.x, trophy.y, pointer.x, pointer.y);
-            const color = Phaser.Display.Color.Interpolate.RGBWithRGB(0, 0, 255, 255, 0, 0, 500, distance);
-            this.cameras.main.setBackgroundColor(color);
-        });
-    }
+                const alpha = Phaser.Math.Clamp(1 - distance / 400, 0.2, 1);
+                let color = Phaser.Display.Color.Interpolate.ColorWithColor(
+                    Phaser.Display.Color.BLUE, 
+                    Phaser.Display.Color.RED, 
+                    100, 
+                    distance, 
+                    0
+                );
 
-    function update() {
-        // Any game loop logic goes here
-    }
-</script>
+                graphics.fillStyle(color.color, alpha);
+                graphics.fillCircle(pointer.x, pointer.y, 20);
+            }, this);
+        }
 
+        function update() {
+            // Update logic
+        }
+    </script>
 </body>
 </html>
