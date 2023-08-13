@@ -52,9 +52,10 @@
         let selectedEmoji = null;
         let score = 0;
         let moves = 0;
-        let maxMoves = 30; // Game ends after this many moves
+        let maxMoves = 30;
         let scoreText, movesText, highScoreText;
-        let highScore = localStorage.getItem('highScore') || 0; // Save high score in local storage
+        let highScore = localStorage.getItem('highScore') || 0;
+        let isSwapping = false;  // Track if emojis are being swapped
 
         function preload() {}
 
@@ -70,45 +71,8 @@
                     emoji.row = i;
                     emoji.col = j;
                     emoji.on('pointerdown', function () {
-                        if (selectedEmoji) {
-                            if (Math.abs(selectedEmoji.row - emoji.row) + Math.abs(selectedEmoji.col - emoji.col) === 1) {
-                                let tempRow = selectedEmoji.row;
-                                let tempCol = selectedEmoji.col;
-
-                                // Update board positions
-                                board[tempRow][tempCol] = emoji;
-                                board[emoji.row][emoji.col] = selectedEmoji;
-
-                                // Swap emoji properties for future reference
-                                [emoji.row, selectedEmoji.row] = [selectedEmoji.row, emoji.row];
-                                [emoji.col, selectedEmoji.col] = [selectedEmoji.col, emoji.col];
-
-                                // Swap visuals
-                                this.tweens.add({
-                                    targets: selectedEmoji,
-                                    x: emoji.x,
-                                    y: emoji.y,
-                                    duration: 200
-                                });
-                                this.tweens.add({
-                                    targets: emoji,
-                                    x: selectedEmoji.x,
-                                    y: selectedEmoji.y,
-                                    duration: 200,
-                                    onComplete: () => {
-                                        checkForMatches();
-                                        moves++;
-                                        movesText.setText('Moves: ' + moves);
-                                        if (moves === maxMoves) {
-                                            gameOver();
-                                        }
-                                    }
-                                });
-                            }
-                            selectedEmoji = null;
-                        } else {
-                            selectedEmoji = emoji;
-                        }
+                        if (isSwapping) return;  // Prevent further interaction during swap
+                        handleEmojiClick(this);
                     }, this);
                     row.push(emoji);
                 }
@@ -127,6 +91,44 @@
                 fontSize: '20px',
                 fill: '#000'
             });
+        }
+
+        function handleEmojiClick(emoji) {
+            if (selectedEmoji) {
+                if (Math.abs(selectedEmoji.row - emoji.row) + Math.abs(selectedEmoji.col - emoji.col) === 1) {
+                    isSwapping = true;
+                    let tempRow = selectedEmoji.row;
+                    let tempCol = selectedEmoji.col;
+
+                    // Update board positions
+                    board[tempRow][tempCol] = emoji;
+                    board[emoji.row][emoji.col] = selectedEmoji;
+
+                    // Swap emoji properties for future reference
+                    [emoji.row, selectedEmoji.row] = [selectedEmoji.row, emoji.row];
+                    [emoji.col, selectedEmoji.col] = [selectedEmoji.col, emoji.col];
+
+                    // Swap visuals
+                    this.tweens.add({
+                        targets: [selectedEmoji, emoji],
+                        x: { value: '+=60', getEnd: (target, key, value) => (target === selectedEmoji ? emoji.x : selectedEmoji.x) },
+                        y: { value: '+=60', getEnd: (target, key, value) => (target === selectedEmoji ? emoji.y : selectedEmoji.y) },
+                        duration: 200,
+                        onComplete: () => {
+                            checkForMatches();
+                            moves++;
+                            movesText.setText('Moves: ' + moves);
+                            if (moves === maxMoves) {
+                                gameOver();
+                            }
+                            isSwapping = false;
+                        }
+                    });
+                }
+                selectedEmoji = null;
+            } else {
+                selectedEmoji = emoji;
+            }
         }
 
         function update() {}
